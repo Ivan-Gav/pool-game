@@ -69,41 +69,37 @@ export const animate = (obj: AnimateMethods) => {
 class Mouse {
   x: number;
   y: number;
-  // r: number;
-  dX: number;
-  dY: number;
+  vx: number;
+  vy: number;
   timestamp: number;
-  // overTable: boolean;
-  isBall: boolean;
+  btnPressed: boolean;
   ball: number;
 
   constructor() {
     this.x = 0;
     this.y = 0;
-    // this.r = r;
-    this.dX = 0;
-    this.dY = 0;
+    this.vx = 0;
+    this.vy = 0;
     this.timestamp = 0;
-    // this.overTable = false;
-    this.isBall = false;
+    this.btnPressed = false;
     this.ball = -1;
   }
 
-  // setDX(dX: number) {
-  //   this.dX = dX;
-  //   const delay = setTimeout(() => {
-  //     this.dX = 0;
-  //     return () => clearTimeout(delay);
-  //   }, 10);
-  // }
+  setVx(vx: number) {
+    this.vx = vx;
+    const delay = setTimeout(() => {
+      this.vx = 0;
+      return () => clearTimeout(delay);
+    }, 200);
+  }
 
-  // setDY(dY: number) {
-  //   this.dY = dY;
-  //   const delay = setTimeout(() => {
-  //     this.dY = 0;
-  //     return () => clearTimeout(delay);
-  //   }, 10);
-  // }
+  setVy(vy: number) {
+    this.vy = vy;
+    const delay = setTimeout(() => {
+      this.vy = 0;
+      return () => clearTimeout(delay);
+    }, 200);
+  }
 }
 
 export const trackMouse = (canvas: HTMLCanvasElement) => {
@@ -114,25 +110,19 @@ export const trackMouse = (canvas: HTMLCanvasElement) => {
   const mousemoveHandler = (e: MouseEvent) => {
     mouse.x = e.clientX - left;
     mouse.y = e.clientY - top;
-    // mouse.setDX(e.movementX);
-    // mouse.setDY(e.movementY);
-    mouse.dX = e.movementX;
-    mouse.dY = e.movementY;
+    mouse.setVx(e.movementX);
+    mouse.setVy(e.movementY);
     mouse.timestamp = e.timeStamp;
   };
 
-  // const mouseenterHandler = () => {
-  //   mouse.overTable = true;
-  // };
-
   const mouseleaveHandler = () => {
-    mouse.isBall = false;
+    mouse.btnPressed = false;
     mouse.ball = -1;
   };
 
   const mousedownHandler = (e: MouseEvent) => {
     if (e.button === 0) {
-      mouse.isBall = true;
+      mouse.btnPressed = true;
     } else if (e.button === 2) {
       console.log("right button clicked");
     }
@@ -140,14 +130,13 @@ export const trackMouse = (canvas: HTMLCanvasElement) => {
 
   const mouseupHandler = (e: MouseEvent) => {
     if (e.button === 0) {
-      mouse.isBall = false;
+      mouse.btnPressed = false;
       mouse.ball = -1;
     }
   };
 
   canvas.addEventListener("mousedown", mousedownHandler);
   canvas.addEventListener("mouseup", mouseupHandler);
-  // canvas.addEventListener("mouseenter", mouseenterHandler);
   canvas.addEventListener("mouseleave", mouseleaveHandler);
   canvas.addEventListener("mousemove", mousemoveHandler);
 
@@ -198,7 +187,7 @@ export const handleCollapse = (data: CollapseData) => {
     (-vx1alpha * Math.sin(alpha) + uy1alpha * Math.cos(alpha)) *
     attenuationRatio;
   vx2New =
-    (vx2alpha * Math.cos(alpha) - uy2alpha * Math.sin(alpha)) *
+    (-vx2alpha * Math.cos(alpha) + uy2alpha * Math.sin(alpha)) *
     attenuationRatio;
   vy2New =
     (-vx2alpha * Math.sin(alpha) + uy2alpha * Math.cos(alpha)) *
@@ -207,30 +196,6 @@ export const handleCollapse = (data: CollapseData) => {
   return { vx1New, vy1New, vx2New, vy2New };
 };
 
-// ---------------------------------------------------------
-export const handleStroke = (data: CollapseData) => {
-  const { x1, y1, vx1, vy1, x2, y2, vx2, vy2, attenuationRatio } = data;
-
-  let vx1New = 0;
-  let vy1New = 0;
-
-  const alpha = y2 !== y1 ? Math.atan2(x2 - x1, y2 - y1) : x2 > x1 ? 1 : -1;
-
-  const vx1alpha = vx1 * Math.cos(alpha) - vy1 * Math.sin(alpha);
-  const vy1alpha = vx1 * Math.sin(alpha) + vy1 * Math.cos(alpha);
-  const vy2alpha = -vx2 * Math.sin(alpha) - vy2 * Math.cos(alpha);
-
-  const uy1alpha = -vy2alpha - vy1alpha;
-
-  vx1New =
-    (vx1alpha * Math.cos(alpha) + uy1alpha * Math.sin(alpha)) *
-    attenuationRatio;
-  vy1New =
-    (-vx1alpha * Math.sin(alpha) + uy1alpha * Math.cos(alpha)) *
-    attenuationRatio;
-
-  return { vx1New, vy1New };
-};
 // ---------------------------------------------------------
 type Config = {
   qty: number;
@@ -244,7 +209,10 @@ type Config = {
 
 type Border = "left" | "top" | "right" | "bottom" | null;
 
+// ------------BALL---------------
 export class Ball {
+  static balls: Ball[] = [];
+
   id: number;
   x: number;
   y: number;
@@ -255,6 +223,8 @@ export class Ball {
   attenuationRatio: number;
   collapseWith: Set<number>;
   private border: Border;
+  W: number;
+  H: number;
 
   constructor(
     id: number,
@@ -262,8 +232,12 @@ export class Ball {
     y0: number,
     r: number,
     color: string,
-    attenuationRatio: number
+    attenuationRatio: number,
+    W: number,
+    H: number
   ) {
+    this.W = W;
+    this.H = H;
     this.id = id;
     this.x = x0;
     this.y = y0;
@@ -275,6 +249,44 @@ export class Ball {
     this.collapseWith = new Set<number>();
     this.border = null;
   }
+
+  setX(x: number) {
+    let newX = x < this.r ? this.r : x > this.W - this.r ? this.W - this.r : x;
+    if (this.collapseWith.size) {
+      this.collapseWith.forEach((id) => {
+        const b2 = Ball.balls[id];
+        const dist =
+          Math.sqrt((this.x - b2.x) ** 2 + (this.y - b2.y) ** 2) -
+          this.r -
+          b2.r;
+        if (dist <= 0 && Math.abs(newX-b2.x) < Math.abs(this.x - b2.x)) {
+          newX = this.x - (newX - this.x);
+        }
+      });
+    }
+    this.x = newX;
+  }
+
+  setY(y: number) {
+    let newY = y < this.r ? this.r : y > this.H - this.r ? this.H - this.r : y;
+    if (this.collapseWith.size) {
+      this.collapseWith.forEach((id) => {
+        const b2 = Ball.balls[id];
+        const dist =
+          Math.sqrt((this.x - b2.x) ** 2 + (this.y - b2.y) ** 2) -
+          this.r -
+          b2.r;
+        if (dist <= 0&& Math.abs(newY-b2.y) < Math.abs(this.y - b2.y)) {
+          newY = this.y - (newY - this.y);
+        }
+      });
+    }
+    this.y = newY;
+  }
+
+  // setY(y: number) {
+  //   this.y = y < this.r ? this.r : y > this.H - this.r ? this.H - this.r : y;
+  // }
 
   draw(ctx: CanvasRenderingContext2D) {
     ctx.beginPath();
@@ -295,14 +307,14 @@ export class Ball {
     }, 300);
   }
 
-  handleBorderTouch(W: number, H: number) {
+  handleBorderTouch() {
     if (this.x - this.r <= 0 && this.border !== "left") {
       this.vx = -this.vx * this.attenuationRatio;
       this.vy = this.vy * this.attenuationRatio;
       this.setBorder("left");
     }
 
-    if (this.x + this.r >= W && this.border !== "right") {
+    if (this.x + this.r >= this.W && this.border !== "right") {
       this.vx = -this.vx * this.attenuationRatio;
       this.vy = this.vy * this.attenuationRatio;
       this.setBorder("right");
@@ -314,53 +326,28 @@ export class Ball {
       this.setBorder("top");
     }
 
-    if (this.y + this.r >= H && this.border !== "bottom") {
+    if (this.y + this.r >= this.H && this.border !== "bottom") {
       this.vy = -this.vy * this.attenuationRatio;
       this.vx = this.vx * this.attenuationRatio;
       this.setBorder("bottom");
     }
   }
 
-  // handleStroke(mouse: Mouse) {
-  //   const distToMouse =
-  //     Math.sqrt((this.x - mouse.x) ** 2 + (this.y - mouse.y) ** 2) -
-  //     this.r -
-  //     mouse.r;
-
-  //   if (distToMouse <= 0 && mouse.isBall) {
-  //     mouse.isBall = false;
-
-  //     const { vx1New, vy1New } = handleStroke({
-  //       x1: this.x,
-  //       y1: this.y,
-  //       r1: this.r,
-  //       vx1: this.vx,
-  //       vy1: this.vy,
-  //       x2: mouse.x,
-  //       y2: mouse.y,
-  //       r2: mouse.r,
-  //       vx2: mouse.dX,
-  //       vy2: mouse.dY,
-  //       attenuationRatio: this.attenuationRatio,
-  //     });
-  //     this.vx = vx1New;
-  //     this.vy = vy1New;
-  //   }
-  //   this.x += this.vx;
-  //   this.y += this.vy;
-  // }
-
   handleStroke(mouse: Mouse) {
     const distToMouse =
-      Math.sqrt((this.x - mouse.x) ** 2 + (this.y - mouse.y) ** 2) -
-      this.r
+      Math.sqrt((this.x - mouse.x) ** 2 + (this.y - mouse.y) ** 2) - this.r;
 
-    if (distToMouse <= 0 && mouse.isBall && (mouse.ball === -1 || mouse.ball === this.id)) {
-      mouse.ball = this.id
-      this.x = mouse.x;
-      this.y = mouse.y;
-      this.vx = mouse.dX;
-      this.vy = mouse.dY;
+    if (
+      distToMouse <= 0 &&
+      mouse.btnPressed &&
+      (mouse.ball === -1 || mouse.ball === this.id) &&
+      !this.collapseWith.size
+    ) {
+      mouse.ball = this.id;
+      this.setX(mouse.x);
+      this.setY(mouse.y);
+      this.vx = mouse.vx;
+      this.vy = mouse.vy;
     }
   }
 
@@ -395,10 +382,6 @@ export class Ball {
       ball2.vy = vy2New;
     }
 
-    // ball1.x += ball1.vx;
-    // ball1.y += ball1.vy;
-    // ball2.x += ball2.vx;
-    // ball2.y += ball2.vy;
     if (dist > 0) {
       ball1.collapseWith.delete(ball2.id);
       ball2.collapseWith.delete(ball1.id);
@@ -406,8 +389,8 @@ export class Ball {
   }
 
   move() {
-    this.x += this.vx;
-    this.y += this.vy;
+    this.setX(this.x + this.vx);
+    this.setY(this.y + this.vy);
   }
 }
 
@@ -480,7 +463,7 @@ export const setBalls = (config: Config) => {
   // set first ball
   const r0 = gR();
   const { x: x0, y: y0 } = gC(r0);
-  balls.push(new Ball(0, x0, y0, r0, generateColor(), attenuationRatio));
+  balls.push(new Ball(0, x0, y0, r0, "#ffffff", attenuationRatio, W, H));
 
   if (qty === 1) {
     return balls;
@@ -495,9 +478,10 @@ export const setBalls = (config: Config) => {
       const { x, y } = gC(r);
       (xI = x), (yI = y);
     } while (isOverlapping(xI, yI, r));
-    balls.push(new Ball(i, xI, yI, r, generateColor(), attenuationRatio));
+    balls.push(new Ball(i, xI, yI, r, generateColor(), attenuationRatio, W, H));
   }
 
+  Ball.balls = balls;
   return balls;
 };
 

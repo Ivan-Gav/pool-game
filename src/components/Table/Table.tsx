@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 import s from "./Table.module.css";
 import {
-  // drawBall,
   animate,
   trackMouse,
   setBalls,
@@ -24,9 +23,6 @@ export default function Table(
 
     ctx.clearRect(0, 0, W, H);
 
-    // const cursorR = 12;
-    // const cursorColor = "#ffffff";
-
     const ballsConfig = {
       qty: 5,
       minR: 10,
@@ -47,19 +43,16 @@ export default function Table(
       },
       update() {
         balls.forEach((ball) => {
-          ball.handleBorderTouch(W, H);
+          ball.handleBorderTouch();
           ball.handleStroke(mouse);
           balls
-            .filter((item) => item !== ball)
+            .filter((item) => item.id > ball.id)
             .forEach((item) => Ball.handleCollapse(item, ball));
           ball.move();
         });
       },
       render() {
         balls.forEach((ball) => ball.draw(ctx));
-        // if (mouse.isBall) {
-        //   drawBall(ctx, mouse.x, mouse.y, cursorR, cursorColor);
-        // }
       },
     });
   }, []);
