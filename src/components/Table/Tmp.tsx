@@ -6,7 +6,7 @@ import {
   trackMouse,
   // handleCollapse,
   handleStroke,
-} from "../../functions/functions";
+} from "../../functions/animate";
 
 type Vel = {
   dX: number;

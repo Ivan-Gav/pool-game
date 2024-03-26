@@ -1,11 +1,8 @@
 import { useEffect, useRef } from "react";
 import s from "./Table.module.css";
-import {
-  animate,
-  trackMouse,
-  setBalls,
-  Ball,
-} from "../../functions/functions";
+import { animate } from "../../functions/animate";
+import { Ball } from "../../objects/ball";
+import { Mouse } from "../../objects/mouse";
 
 export default function Table(
   props: React.CanvasHTMLAttributes<HTMLCanvasElement>
@@ -24,7 +21,7 @@ export default function Table(
     ctx.clearRect(0, 0, W, H);
 
     const ballsConfig = {
-      qty: 5,
+      qty: 15,
       minR: 10,
       maxR: 16,
       H,
@@ -33,9 +30,10 @@ export default function Table(
       ctx,
     };
 
-    const balls = setBalls(ballsConfig);
+    const balls = Ball.set(ballsConfig);
 
-    const mouse = trackMouse(canvas);
+    const mouse = new Mouse();
+    mouse.track(canvas);
 
     animate({
       clear() {
