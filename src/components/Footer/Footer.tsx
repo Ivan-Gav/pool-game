@@ -11,7 +11,7 @@ export default function Footer() {
       </div>
       <a
         className={s.gitlink}
-        href="https://github.com/Ivan-Gav/kpr-test"
+        href="https://github.com/Ivan-Gav/pool-game"
         target="_blank"
       >
         <GitIcon />
