@@ -37,7 +37,6 @@ export default function Table(
       if (clicked) {
         setClickedBall(clicked);
         setContextMenu({ show: true, x: clientX, y: clientY });
-        console.log(`clicked ball №${clicked.id}`);
       }
     }
   };
