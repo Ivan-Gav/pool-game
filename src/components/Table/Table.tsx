@@ -69,8 +69,8 @@ export default function Table(
     ctx.clearRect(0, 0, W, H);
 
     const ballsConfig = {
-      qty: 15,
-      minR: 10,
+      qty: 16,
+      minR: 12,
       maxR: 16,
       H,
       W,

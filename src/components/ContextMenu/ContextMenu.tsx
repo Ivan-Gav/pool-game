@@ -1,6 +1,6 @@
 import s from "./ContextMenu.module.css";
 import useClickAway from "../../hooks/useClickAway";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Ball } from "../../objects/ball";
 
 type ContextMenuProps = {
@@ -14,16 +14,15 @@ type ContextMenuProps = {
 export default function ContextMenu(props: ContextMenuProps) {
   const { x, y, closeContextMenu, ball, handleColorChange } = props;
 
-  const color = useRef(ball.color) 
+  const [color, setColor] = useState(ball.color);
+  const colorRef = useRef(ball.color);
+  const contextMenuRef = useRef(null);
 
   const onClose = () => {
-    console.log('fire onClose')
-    console.log(color.current)
-    handleColorChange(color.current);
-    closeContextMenu()
+    handleColorChange(colorRef.current);
+    closeContextMenu();
   };
 
-  const contextMenuRef = useRef(null);
   useClickAway(contextMenuRef, onClose);
 
   return (
@@ -34,11 +33,13 @@ export default function ContextMenu(props: ContextMenuProps) {
     >
       <input
         type="color"
-        value={color.current}
-        onChange={(e) => color.current = e.target.value}
+        value={color}
+        onChange={(e) => {
+          setColor(e.target.value);
+          colorRef.current = e.target.value;
+        }}
         name="color"
         id={`color-${ball.id}`}
-        
       />
     </div>
   );

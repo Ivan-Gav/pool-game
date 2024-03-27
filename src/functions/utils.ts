@@ -121,4 +121,10 @@ const getSpeeds = (data: CollapseData) => {
 
 // -----------------------------------------------------------
 
-export { generateColor, generateRadius, generateCoordinates, getDistance, getSpeeds };
+export {
+  generateColor,
+  generateRadius,
+  generateCoordinates,
+  getDistance,
+  getSpeeds,
+};

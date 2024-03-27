@@ -4,10 +4,9 @@ import {
   generateCoordinates,
   getDistance,
   getSpeeds,
-} from '../functions/utils';
+} from "../functions/utils";
 
-import { Mouse } from './mouse';
-
+import { Mouse } from "./mouse";
 
 type Config = {
   qty: number;
@@ -131,8 +130,8 @@ export class Ball {
     return this.balls;
   }
 
-  static setBall (ball: Ball) {
-    this.balls[ball.id] = ball
+  static setBall(ball: Ball) {
+    this.balls[ball.id] = ball;
   }
 
   private setX(x: number) {
@@ -232,7 +231,14 @@ export class Ball {
     ctx.arc(this.x, this.y, this.r, 0, 2 * Math.PI);
     ctx.lineWidth = 1;
     ctx.strokeStyle = this.color;
-    const grad = ctx.createRadialGradient(this.x + this.r / 4, this.y - this.r / 8, 0, this.x, this.y, this.r);
+    const grad = ctx.createRadialGradient(
+      this.x + this.r / 4,
+      this.y - this.r / 8,
+      0,
+      this.x,
+      this.y,
+      this.r
+    );
     grad.addColorStop(0, "#fff");
     grad.addColorStop(0.8, this.color);
     grad.addColorStop(1, this.color);

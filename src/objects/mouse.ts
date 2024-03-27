@@ -33,32 +33,32 @@ export class Mouse {
 
   track(canvas: HTMLCanvasElement) {
     const { left, top } = canvas.getBoundingClientRect();
-  
+
     const mousemoveHandler = (e: MouseEvent) => {
       this.x = e.clientX - left;
       this.y = e.clientY - top;
       this.setVx(e.movementX);
       this.setVy(e.movementY);
     };
-  
+
     const mouseleaveHandler = () => {
       this.btnPressed = false;
       this.ball = -1;
     };
-  
+
     const mousedownHandler = (e: MouseEvent) => {
       if (e.button === 0) {
         this.btnPressed = true;
       }
     };
-  
+
     const mouseupHandler = (e: MouseEvent) => {
       if (e.button === 0) {
         this.btnPressed = false;
         this.ball = -1;
       }
     };
-  
+
     canvas.addEventListener("mousedown", mousedownHandler);
     canvas.addEventListener("mouseup", mouseupHandler);
     canvas.addEventListener("mouseleave", mouseleaveHandler);
