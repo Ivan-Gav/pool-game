@@ -49,8 +49,6 @@ export class Mouse {
     const mousedownHandler = (e: MouseEvent) => {
       if (e.button === 0) {
         this.btnPressed = true;
-      } else if (e.button === 2) {
-        console.log("right button clicked");
       }
     };
   

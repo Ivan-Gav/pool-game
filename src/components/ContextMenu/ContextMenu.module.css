@@ -1,0 +1,7 @@
+.context_menu {
+  position: absolute;
+  z-index: 10;
+  width: fit-content;
+  height: fit-content;
+  background-color: blueviolet;
+}

@@ -131,6 +131,10 @@ export class Ball {
     return this.balls;
   }
 
+  static setBall (ball: Ball) {
+    this.balls[ball.id] = ball
+  }
+
   private setX(x: number) {
     let newX = x < this.r ? this.r : x > Ball.W - this.r ? Ball.W - this.r : x;
     if (this.collapseWith.size) {
